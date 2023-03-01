@@ -1,0 +1,365 @@
+2) JEST vs RTL:
+===============
+
+JEST:
+-----
+
+- JavaScript test runner.
+
+- JavaScript Tesing Framework
+
+- Jest find tests, run tests, determine whether tests passed or failed and reports it back in a human readable manner.
+
+
+React Testing Library:
+----------------------
+
+- JavaScript testing utility that provides virtual DOm for testing React Components.
+
+- React Testing Library provides a virtual DOm which we can use to interact with and verify the behaviour of a React Component.
+
+- Test Library is infact a family of packages which help tests UI components.
+
+- The core library is called DOM testing library and React Testing Library is simply a wrapper around this core library to test React
+components in an easier way. 
+
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+7) Anatomy:
+===========
+
+App.test.tsx:
+-------------
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+
+
+- render() and screen is imported from react testing library.
+
+- render() method is used to create virtual DOM for <App /> component.
+
+- screen has a reference to document object, so it is also an object which has methods that takes either a string or regex to query
+ the created virtual DOM.
+
+- test() and expect() methods are by default provided by create-react-app in all test files globally, to write our tests.
+
+- test() fn has 3 arguments -> test(name of the test, a function that contains expectations for test, a timeout to specify after
+how many seconds the test should abort. By default it is 5 seconds.
+
+- We use different matchers with expect() function to write the tests.
+ 
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+9) TDD (Test Driven Development):
+=================================
+
+- Test Driven Development is a software development process where you write tests before writing the software code.
+
+- Once the tests have been written, you then write the code to ensure the tests pass.
+
+- Also called as RED-GREEN-TESTING as all tests goes from a red failed state to green passed state.
+
+There are 3 steps involved:
+---------------------------
+
+1) Create tests that specify the functionality of a specific feature.
+
+2) Write software code that will run the tests successfully when re-executed.
+
+3) Refactor the code for optimization while ensuring the tests continue to pass.
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+10) JEST Watch Mode:
+====================
+
+- Watch mode is an option that we can pass to JEST asking to watch files that have changed since last commit and execute tests related
+to only those changed files.
+
+- An optimazion designed to make your tests run fast regardless of how many tests you have. 
+
+
+11) FIltering Tests:
+====================
+
+- In terminal using options given by using filename or testname.
+
+- test.only or test.skip methods to run only that test and skip others or skip only that test and run others respectively.
+
+
+12) Grouping Tests:
+===================
+
+- use gloabl describe() method from jest to gropu multiple tests together.
+
+- it takes 2 args very similar to test method, where arg1 is name and arg2 is expectations to be tested or many test() methods.
+
+- We can use skip and only with describe() also for filering purpose.
+
+- We can have a describe() inside another describe() as nested.
+
+- We can have multiple describe() in the same files.
+
+
+13) Filename conventions:
+=========================
+
+- We can use .test.js or .test.tsx or .spec.ts or .spec.tsx or a test file under folder __tests__ inside src folder.
+
+- We can also use it() method instead of test().
+
+- To achieve test.skip and test.only, we can use fit() and xit() respectively.
+
+
+
+14) Code Coverage:
+==================
+
+- A metric that can help you understand how much of your software code is tested.
+
+* Statement Coverage - How many statements in the software code have been execuetd.
+
+* Branches Coevrage - How many of the branches of the control structure (if statement for instance) have been executed.
+
+* Function Coverage - How many of the functions defined have been called.
+
+* Line Coverage - How many lines of the source code have been tested.
+
+
+steps to achieve:
+-----------------
+
+- In package.json inside script add -> "coverage": "yarn test --coverage"
+
+- Use yarn coverage in terminal to get the coverage report.
+
+- To avoid coverage of some red flagged files and other few files like greet.type.ts for eg, change coverage property value to this
+
+eg:  "coverage": "yarn test --coverage --watchAll --collectCoverageFrom='src/components/**/*.{ts,tsx}' 
+                            --collectCoverageFrom='!src/components/**/*.{types, stories, constants, test, spec}.{ts,tsx}'",
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+16) What to test and what not to test?
+======================================
+
+To Test:
+--------
+
+- Test that the component renders.
+
+- Test that the component renders correctly with props.
+
+- Test that component renders with different states.
+
+- Test that component reacts to events.
+
+
+No to Test:
+-----------
+
+- Implementation details. (As it is against RTL rule that ur test should resemble how ur software is sued by a user and not by how 
+  your software is implemented internally).
+
+- Any third party code / External Libraries. (like material UI buttons and tabs)
+
+- Code that is not important from a user point of view.
+
+
+17) RTL Queries:
+================
+
+- Every Test we write generally involves the following steps:
+
+1) Render the component. (using render() method from RTL)
+
+2) Find an element rendered by component. (using queries from RTL to query the rendred virtual DOM)
+
+3) Assert against that element. (using matchers or custom matchers from JEST/JEST-DOM.)
+
+- Queries are methods that RTL provides to find elements on the page.
+
+- To find a single element on a page, we have:
+
+* getBy..
+* findBy..
+* queryBy...
+
+- To find a multiple elements on a page, we have:
+
+* getAllBy..
+* findAllBy..
+* queryAllBy...
+
+
+- These methods gets completed by suffix from one of these:
+
+* Role
+* LabelText
+* PlaceHolderText
+* Text
+* DisplayValue
+* AltText
+* Title
+* TestId
+
+
+focusing on getBy... queries:
+=============================
+
+- getBy... class of queries return the matching node for a query,
+
+- throws a descriptive error if no match,
+
+- or if more than one match is found.
+
+
+18) getByRole():
+================
+
+- By default, many semantic elements in HTML have a role.
+
+- Button - button, input - textbox, h1,h6 - heading, a tag - link, checkbox & Radio - checkbox&radio, SelectDropdown - combobox
+
+- If u are working with elements that do not have a default role or if you want to specify a diffrent role, we can make use of
+  role attribute.
+
+- eg: To use an anchor element as a button in navbar -> <a href='' role='button'/>
+
+- Link to find roles of different elements: https://www.w3.org/TR/html-aria/#docconformance
+
+
+19) getByRole() options:
+========================
+
+- If there are multiple elements with the same role, we may get error while writing our tests.
+
+- To solve that we can pass a 2nd argument to our getByRole() query method.
+
+- That will be an object with a key value pair.
+
+- Key can be name, level, selected, checked etc.
+
+- The accessible name is for simple cases equal to 
+
+1) The Label of a form element.
+
+2) The text content of a button.
+
+3) The value of the aria-label attribute.
+
+example:
+--------
+const jobHeadingElement = screen.getByRole('heading', {
+      // name: 'Job application form'
+      level: 1
+    });
+    expect(jobHeadingElement).toBeInTheDocument()
+
+    const sectionHeadingElement = screen.getByRole('heading', {
+      // name: 'Section 1'
+      level: 2
+    });
+    expect(sectionHeadingElement).toBeInTheDocument()
+
+    const nameElement = screen.getByRole('textbox', {
+      name: 'Name'
+    });
+    expect(nameElement).toBeInTheDocument()
+
+    const bioElement = screen.getByRole('textbox', {
+      name: 'Bio' // name spelling is case sensitive
+    });
+    expect(bioElement).toBeInTheDocument()
+
+
+
+
+
+20) getByLabelText():
+=====================
+
+- This query method searches a label that matches the specified text and then
+
+- Returns the element associated with that label.
+
+- If multiple lables are found with same text, 
+
+- use 2nd arg to this query method and specify like this: { selector: 'input' }
+
+eg:  const nameElement2 = screen.getByLabelText('Name', {
+      selector: 'input'
+      });
+     expect(nameElement2).toBeInTheDocument()
+
+- It also works very well with wrapped labels.
+
+->  <div>
+        <label> <input type="checkbox" id="terms" /> I agree to the terms and conditions </label>
+    </div>
+
+eg: 
+
+
+
+21) getByPlaceHolder():
+=======================
+
+- This query will search for all elements with a placeholder attribute and returns one that matches the given text.
+
+-> <input type="text" id="name" placeholder="Fullname" />
+
+eg:   const nameElement3 = screen.getByPlaceholderText('Fullname');
+      expect(nameElement3).toBeInTheDocument()
+
+
+22) getByText():
+================
+
+- It searches for all elements that have a text node with text content matching the given content.
+
+- Typically, it is used to find paragraph, div or span elements. 
+
+- It also takes selector prop like getByLabelText()
+
+eg:
+---
+const paragraphElement = screen.getByText('All fields are mandatory') 
+expect(paragraphElement).toBeInTheDocument()
+
+
+23) getByDisplayValue():
+=======================
+
+- It returns input, textarea or select element that has the matching display value.
+
+- Typically you will use this when you want to use Form Controls based on their values.
+
+eg:
+--
+
+-> <input type="text" id="name" placeholder="Fullname" value="Vishwas" onChange={() => {}}
+
+const nameElement4 = screen.getByDisplayValue('Vishwas');
+expect(nameElement4).toBeInTheDocument()
+
+
+
+24) getByAltText():
+===================
+
+- 
