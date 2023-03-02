@@ -16,7 +16,7 @@ React Testing Library:
 
 - JavaScript testing utility that provides virtual DOm for testing React Components.
 
-- React Testing Library provides a virtual DOm which we can use to interact with and verify the behaviour of a React Component.
+- React Testing Library provides a virtual DOM which we can use to interact with and verify the behaviour of a React Component.
 
 - Test Library is infact a family of packages which help tests UI components.
 
@@ -352,7 +352,7 @@ expect(paragraphElement).toBeInTheDocument()
 eg:
 --
 
--> <input type="text" id="name" placeholder="Fullname" value="Vishwas" onChange={() => {}}
+-> <input type="text" id="name" placeholder="Fullname" value="Vishwas" onChange={() => {}} />
 
 const nameElement4 = screen.getByDisplayValue('Vishwas');
 expect(nameElement4).toBeInTheDocument()
@@ -362,4 +362,502 @@ expect(nameElement4).toBeInTheDocument()
 24) getByAltText():
 ===================
 
-- 
+- getByAltText() will return the element that has the given alt text.
+
+- This method only supports elements which accepts an alt attribute like <img>, <input>, <area> or custom HTML elements.
+
+eg:
+---
+
+-> <img src="https://via.placeholder.com/150" alt="a person with a laptop" />
+
+ const imageElement = screen.getByAltText('a person with a laptop')
+ expect(imageElement).toBeInTheDocument()
+
+
+
+25) getByTitle():
+=================
+
+- It returns the element that has the matching title attribute.
+
+eg: 
+---
+
+-> <span title="close"> X </span>
+
+const titleElement = screen.getByTitle('close')
+expect(titleElement).toBeInTheDocument()
+
+
+
+26) getByTestId():
+==================
+
+- It returns the element that has the matching data-testid attribute.
+
+eg:
+---
+
+->  <div data-testid="custom-element">Custom HTML element</div>
+
+const customElement = screen.getByTestId('custom-element')
+expect(customElement).toBeInTheDocument();
+
+
+28) Skills folder
+
+29) TextMatch:
+==============
+
+- TextMatch represents a type which can be either a 
+
+* String
+* Regex
+* Function
+
+String:
+-------
+<div> Hello World </div>
+
+screen.getByText('Hello World') // full string match
+
+screen.getByText('llo World', {exact: false}) // substring match
+
+acreen.getByText('hello world', {exact: false}) // full string match Ignore case
+
+
+
+Regex:
+------
+<div> Hello World </div>
+
+screen.getByText(/World/) // Substring match
+
+screen.getByText(/world/i}) // substring match ignore case
+
+acreen.getByText(/^hello world$/i) // full string match Ignore case
+
+
+
+Function:
+---------
+<div> Hello World </div>
+
+(content?: string , element?: Element | null) => boolean
+
+screen.getByTextContent((content) => content.startsWith('Hello'));  
+
+
+
+30) queryBy and queryAllBy:
+============================
+
+queryBy:
+--------
+
+- returns the matching node for a query, and returns null if no elements match.
+
+- Useful for asserting an element that is not present
+
+- throws an error if more than one match is found.
+
+
+queryAllBy:
+-----------
+
+- returns an Array of all matching nodes for a query, 
+
+- returns an empty array if no elements match.
+
+
+31) findBy:
+===========
+
+appearance & disapperance:
+--------------------------
+
+- What if elements are not present in the DOM to begin but make their way to the DOM after sometime.
+
+- For example Data that is fetched from the server will be rendered only after a few miliseconds.
+
+
+findBy and findAllBy:
+---------------------
+
+- They are useful to wait for an element to appear or disappear in response to an event, user action, timeout or promise.
+
+
+findBy:
+-------
+
+- Returns a Promise which gets resolves when an element is found which matches the given query.
+
+- The Promise is rejected if no eleemnt is found or if more than one element is found after a default timeout of 1000 ms.
+
+
+findAllBy:
+----------
+
+- Returns a Promise which resolves to an Array of elements when any elements are found which matches the given query.
+
+- The Promise is rejected if no elements are found after a default timeout of 1000 ms.
+
+* Make use of async await during this case.
+
+* Using normal getByRole() query method throws this error because it does not wait for any element to appear after some time.
+
+error: TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Start Learning"
+
+- We can also pass a 3rd arg to findBy() and findAllBy() to extend default timeout from more than 1000 ms like this,
+
+  { timeout: 2000 }
+
+
+eg:
+---
+
+useEffect(() => {
+    setTimeout(() => {
+      setisLoggedIn(true)
+    }, 1001)
+}, [])
+
+
+Test Code:
+----------
+
+test('Start Learning button is eventually displayed', async () => {
+    render(<Skills skills={skills} />)
+
+    const startLearningButton = await screen.findByRole('button', {
+      name: 'Start Learning'
+    },
+    {
+      timeout: 2000
+    })
+    expect(startLearningButton).toBeInTheDocument()
+})
+
+
+33) Debugging:
+=============
+
+- Already RTL provides us a formatted DOM tree and readable error message if any tests fails.
+
+- We can use screen.debug() before and after querying the VIRTUAL DOM to get 2 formatted DOM trees one intial and other after
+
+ a particular time has passed.
+
+- It helps us to visualize the formatted state of the DOM tree at any point during the test.
+
+- We can also use logRoles() function RTL to print out a list of all the implicit aria-roles within the DOM tree.
+
+- To use it -> import { logRoles } from "@testing-library/react";
+
+- Both of them are very useful for debugging tests.
+
+
+Example:
+--------
+ test('Start Learning button is eventually displayed', async () => {
+
+   const view =  render(<Skills skills={skills} />)
+
+   logRoles(view.container)
+
+   screen.debug()
+
+    const startLearningButton = await screen.findByRole('button', {
+      name: 'Start Learning'
+    },
+    {
+      timeout: 2000
+    })
+
+    screen.debug()
+    expect(startLearningButton).toBeInTheDocument()
+  })
+
+
+
+logRoles(view.container) output:
+--------------------------------
+console.log
+      list:
+
+      Name "":
+      <ul />
+      
+      --------------------------------------------------
+      listitem:
+      
+      Name "":
+      <li />
+
+      Name "":
+      <li />
+
+      Name "":
+      <li />
+
+      --------------------------------------------------
+      button:
+
+      Name "Login":
+      <button />
+
+      -------------------------------------------------- 
+
+
+screen.debug() outputs:
+-----------------------
+
+ console.log
+      <body>
+        <div>
+          <ul>
+            <li>
+              HTML
+            </li>
+            <li>
+              CSS
+            </li>
+            <li>
+              JavaScript
+            </li>
+          </ul>
+          <button>
+             Login
+          </button>
+        </div>
+      </body>
+
+      at logDOM (node_modules/@testing-library/dom/dist/pretty-dom.js:87:13)
+
+    console.log
+      <body>
+        <div>
+          <ul>
+            <li>
+              HTML
+            </li>
+            <li>
+              CSS
+            </li>
+            <li>
+              JavaScript
+            </li>
+          </ul>
+          <button>
+             Start Learning
+          </button>
+        </div>
+      </body>
+
+
+34) Testing PlayGround Chrome Extension:
+========================================
+
+- We can use this to find best queries to select elements when writing tests.
+
+- When You install the extension, it will add a new panel to chrome DevTool 
+
+- Which allows you to select elements in the browser, while suggesting the best way to find that element.
+
+
+
+35) User Interactions:
+======================
+
+user-event:
+-----------
+
+- A companion library for testing library that simulates user interactions by dispatching the events that would happen if the 
+interactions took place in a browser.
+
+- It is the recommended way to Test user interactions with RTL.
+
+
+user-event vs fireEvent:
+------------------------
+
+* fireEvent is a method from RTL which is used to dispatch DOM events.
+
+* user-event simulate full interactions, which may fire multiple events and do additional checks along the way.
+
+* For example we can dispatch the change event on an inputfield using fireEvent.
+
+* When a user type into a text box, the element has to be focussed, and then keyboard and input events are fired and the selection and value on the element are manupulated as they type.
+
+* user-event allow you to describe a full user interaction instead of a concrete event. It add visibility and interactibility checks
+along the way and manupulates the DOM just like a user interaction in the browser would.
+
+* It factors in that the browser  eg: wouldn't let a user click a hidden element or type in a disabled text box.
+
+
+-> By default create react app provides us user-event
+
+-> Update it to latest version using -> yarn upgrade @testing-library/user-event@latest
+
+
+36) Pointer Interactions:
+=========================
+
+- Simulate user clicking a button to increment a counter value.
+
+- We achieve this with the help of user-event 
+
+- import user from '@testing-library/user-event'
+
+- call user.setUp() right before render()
+
+- use async await because all apis from user-event is asynchronous.
+
+Convenience apis:
+-----------------
+
+* click(), doubleClick(), tripleClick(), 
+* hover(), unHover() -> used in tooltip testing cases
+
+
+Low level pointer apis:
+=======================
+
+-> pointer({ keys: '[MouseLeft]' })
+
+-> pointer({ keys: '[MouseLeft][MouseRight]' })
+
+-> pointer('[MouseLeft][MouseRight]')
+
+-> pointer('[MouseLeft>]') - ensure a pressed button is not relased
+
+-> pointer('[/MouseLeft]') - ensure to release previousaly pressed button
+
+
+
+Example:
+--------
+
+test('renders a count of 1 after clicking the Increment button', async () => {
+  user.setup()  // creating an instance of user-event 
+  render(<Counter />)
+
+  const incrementButtonElement = screen.getByRole('button', {
+    name: 'Increment'
+  })
+
+  await user.click(incrementButtonElement)
+  const countElement = screen.getByRole('heading');
+  expect(countElement).toHaveTextContent('1');
+  })
+
+  
+  test('renders a count of 2 after double clicking increment button', async () => {
+    user.setup() // creating an instance of user-event 
+    render(<Counter />)
+
+    const incrementButtonElement = screen.getByRole('button', {
+      name: 'Increment'
+    })
+
+    await user.dblClick(incrementButtonElement);
+
+    const countElement = screen.getByRole('heading');
+    expect(countElement).toHaveTextContent('2');
+  })
+
+
+
+
+37) Keyboard Interactions:
+==========================
+
+- role of an input of type number is spinbutton and not textbox.
+
+Example:
+--------
+ // 5
+  test('render a count of 10 after clicking the Set button', async () => {
+    user.setup()
+    render(<Counter />)
+
+    // role of an input of type number is spinbutton and not textBox
+    const inputAmountElement = screen.getByRole('spinbutton'); 
+    await user.type(inputAmountElement, '10')
+    expect(inputAmountElement).toHaveValue(10);
+
+    const setButtonElement = screen.getByRole('button', {
+      name: 'Set' 
+    })
+    await user.click(setButtonElement);
+
+    const countElement = screen.getByRole('heading');
+    expect(countElement).toHaveTextContent('10')
+  })
+
+
+Focus order test:
+-----------------
+
+test('Elements are focussed in the right order', async () => {
+    user.setup();
+    render(<Counter />);
+
+    const incrementButtonElement = screen.getByRole('button', { name: 'Increment'});
+    const inputAmountElement = screen.getByRole('spinbutton');
+    const setButtonElement = screen.getByRole('button', { name: 'Set'})
+
+    await user.tab()
+    expect(incrementButtonElement).toHaveFocus();
+
+    await user.tab()
+    expect(inputAmountElement).toHaveFocus();
+
+    await user.tab()
+    expect(setButtonElement).toHaveFocus();
+  })
+
+
+Keyboard Interactions:
+----------------------
+
+- type() and tab() are not the part of keyboard API.
+
+- type() is from UTILITY API.
+
+- tab() is from CONVENIENCE API.
+
+- There is only one Convenience api which is tab, but there are quite a few Utility api.
+
+
+examples of other Utility APIs for testing Keyboard Interactions:
+-----------------------------------------------------------------
+
+1) clear() - Used to easily clear an editable element.
+
+- Here is the test code for an TextArea element with a default value, clear() called on that element and asserting the value is clear
+  after asserting.
+
+
+
+  test('Clear', async () => {
+    render(<textarea defaultValue = 'Hello World' />)
+
+    const textAreaElement = screen.getByRole('textbox');
+    await user.clear(textAreaElement);
+
+    expect(textAreaElement).toHaveValue('')
+  })
+
+
+
+2) selectOptions() and deselectOptions:
+---------------------------------------
+
+-  They are used to easily select and diselect elements in select dropdown or a listbox where you can select multiple elements.
+
+
+
+
+

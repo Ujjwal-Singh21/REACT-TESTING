@@ -24,6 +24,27 @@ describe('Application', () => {
     const paragraphElement = screen.getByText('All fields are mandatory') // also takes selector prop like getByLabelText
     expect(paragraphElement).toBeInTheDocument()
 
+    // substring match as String type
+    const paragraphElement1 = screen.getByText('are mandatory', {exact: false})
+    expect(paragraphElement1).toBeInTheDocument()
+
+    // substring match as Regex type
+    const paragraphElement2 = screen.getByText(/are mandatory/)
+    expect(paragraphElement2).toBeInTheDocument()
+
+     // substring match as function type
+     const paragraphElement3 = screen.getByText((content) => content.startsWith('All'))
+     expect(paragraphElement3).toBeInTheDocument()
+
+
+    const imageElement = screen.getByAltText('a person with a laptop')
+    expect(imageElement).toBeInTheDocument()
+
+    const titleElement = screen.getByTitle('close')
+    expect(titleElement).toBeInTheDocument()
+
+    const customElement = screen.getByTestId('custom-element')
+    expect(customElement).toBeInTheDocument();
 
     // Input name element:
     // -------------------
