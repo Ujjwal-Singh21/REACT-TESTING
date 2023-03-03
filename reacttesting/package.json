@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/material": "^5.11.11",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^14.4.3",
@@ -21,12 +24,14 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "lint": "eslint --ignore-path .gitignore .",
     "coverage": "yarn test --coverage --watchAll --collectCoverageFrom='src/components/**/*.{ts,tsx}' --collectCoverageFrom='!src/components/**/*.{type, stories, spec, test}.{ts,tsx}'"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "plugin: jest-dom/recommended"
     ]
   },
   "browserslist": {
@@ -50,5 +55,9 @@
         "statements": -10
       }
     }
+  },
+  "devDependencies": {
+    "eslint-plugin-jest-dom": "^4.0.3",
+    "msw": "^1.1.0"
   }
 }

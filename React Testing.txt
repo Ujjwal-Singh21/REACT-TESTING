@@ -541,7 +541,7 @@ test('Start Learning button is eventually displayed', async () => {
 
 
 33) Debugging:
-=============
+==============
 
 - Already RTL provides us a formatted DOM tree and readable error message if any tests fails.
 
@@ -828,7 +828,7 @@ Keyboard Interactions:
 
 - tab() is from CONVENIENCE API.
 
-- There is only one Convenience api which is tab, but there are quite a few Utility api.
+- There is only one Convenience api which is tab(), but there are quite a few Utility api.
 
 
 examples of other Utility APIs for testing Keyboard Interactions:
@@ -852,12 +852,506 @@ examples of other Utility APIs for testing Keyboard Interactions:
 
 
 
-2) selectOptions() and deselectOptions:
----------------------------------------
+2) selectOptions() and deselectOptions():
+-----------------------------------------
 
 -  They are used to easily select and diselect elements in select dropdown or a listbox where you can select multiple elements.
 
 
+selectOptions():
+----------------
+
+- Here is an example of a test that uses selectOptions Api to select multiple options in a multiselect dropdown.
+
+example:
+--------
+
+ test('Select Options ', async () => {
+    render(
+      <select multiple>
+        <option value='1'> A </option>
+        <option value='2'> B </option>
+        <option value='3'> C </option>
+      </select>
+    )
+
+    const listBoxElement = screen.getByRole('listbox');
+    await user.selectOptions(listBoxElement, ['1', 'C']);
+
+    const optionElement1 = screen.getByRole('option', {
+      name: 'A'
+    })
+
+    const optionElement2 = screen.getByRole('option', {
+      name: 'B'
+    })
+
+    const optionElement3 = screen.getByRole('option', {
+      name: 'C'
+    })
+
+    expect(optionElement1.selected).toBe(true)
+    expect(optionElement2.selected).toBe(false)
+    expect(optionElement3.selected).toBe(true)
 
 
+deselectOptions():
+------------------
+
+- Here is an example of deselectOptions.
+
+- We are deslectiong an option with value 2 and we are expecting the selection to be false in our assertion.
+
+
+example:
+--------
+
+  test('deselectOptions',  async () => {
+
+    render(
+      <select multiple>
+        <option value='1'> A </option>
+        <option value='2' selected> B </option>
+        <option value='3'> C </option>
+      </select>
+    )
+
+    const listBoxElement = screen.getByRole('listbox');
+    await user.deselectOptions(listBoxElement, '2');
+
+    const OptionBElement = screen.getByText('B');
+    expect(OptionBElement.selected).toBe(false)
+  })
+
+
+upload():
+---------
+
+- The last utility API is upload().
+
+- Which is used to change a file input as if the user clicked it and selected files  in the resulting file upload dialog.
+
+example:
+--------
+
+test('upload file',  async () => {
+
+    render(
+     <div>
+      <label htmlFor="file-uploader"> Upload File: </label>
+      <input id='file-uploader' type='file'/>
+     </div>
+    )
+
+    const file = new File(['hello'], 'hello.png', {
+      type: 'image/png'
+    })
+
+    const input = screen.getByLabelText(/upload file/i)
+
+    await user.upload(input, file)
+
+    expect(input.files[0]).toBe(File)
+    expect(input.isDefaultNamespace.item(0)).toBe(file)
+    expect(input.files).toHaveLength(1)
+  })
+
+
+Clipboard APis:
+---------------
+
+- copy(), cut(), paste()
+
+
+
+38) Providers:
+==============
+
+- Initially while testing we get error expected dark mode and recieved light mode.
+
+- This is because in our Testing Environment, when we render <MuiMode /> component, It is not wrapped with <AppProvider>, and hence
+  it is not able to recieve provide theme and hence we get error.
+
+- To solve that we pass 2nd arg as an object to render() method while getting hold of artifficial DOM from RTL.
+
+-  render(<MuiMode />, {
+      wrapper: AppProvider
+    })
+
+
+
+
+39) Custom Render Functions:
+============================
+
+- If you think about previous above topic, in real time application we would want almost every component to be wrapped with ThemeProvider, which is called as AppProvider in our case.
+
+- Which is something like, AppProvider is necessary for every test you will write in your application.
+
+  eg: ThemeProvider, ReduxStoreProvider
+
+- Would'nt it be nice if there will be a way to specify the Wrapper component only just once for every test in the app.
+
+
+Steps to Achieve:
+-----------------
+
+* get custom render function code from Testing-Library website.
+
+* make a file test-utils.tsx in src folder and pasted the copied code in that file.
+
+* Make few necessary changes by remving extra unwanted code.
+
+code:
+-----
+import { ReactElement } from 'react'
+import { render, RenderOptions } from '@testing-library/react'
+import { AppProvider } from './components/Providers/app-providers'
+
+const customRender = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
+) => render(ui, { wrapper: AppProvider, ...options })
+
+export * from '@testing-library/react'
+export { customRender as render }
+
+
+* Now in ur testing file, import render and screen from newly created file test-utils.tsx.
+
+  -> import { render, screen } from '../../test-utils'
+
+
+
+
+40) Custom React Hooks:
+=======================
+
+- For Testing custom hooks, we dont reply on { render, screen } from RTL.
+
+- Because render() method accepts a React Component that returns JSX, which forms our Virtual DOM.
+
+- But a custom hook does not return any jsx and hence render() method will not work.
+
+- Hence we use renerHook() from RTL, that accepts custom hook as paramater, invokes it inside a functional component and returns an    
+  object from whcih we destructure { result }.
+
+- result.current poperty that gives us all the values returned from custom Hook. 
+
+- And we have to invoke the custom hooks with props, we pass in a 2nd arg to renderHook() method which is an options object with a   
+  key called initialProps.
+
+
+
+41) act() utility:
+==================
+
+- Whne testing custom hooks or code that causes state updates like increment() and decrement() in our case,
+
+- RTL cannot wrap them (setState which is internally called by increment() function) with act() utility function.
+
+- act() helps us to process and complete the DOM updates before we make our assertions.
+
+- We have to manually import it and wrap code that causes state updates.
+
+- For the most part RTL wraps every method it exposes with act().
+
+- Having to import it manually and use is a rare scenario like currently we had.
+
+
+without act() wrapping we get this warning from RTL:
+----------------------------------------------------
+ -> Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+ -> When testing, code that causes React state updates should be wrapped into act(...):
+
+eg: Hooks / use-Counter
+
+
+42) Mocking functions:
+======================
+
+- Mock functions allows you to test your code without having to worry about the actual implmentation of the function.
+
+- We use JEST to create mock functions by calling it as jest.fn()
+
+eg: CounterTwo folder
+
+
+example:
+--------
+
+ test('Increment and Decrement handlers are called', async () => {
+    user.setup()
+    
+    // Creates a mock function. Optionally takes a mock implementation.
+    const incrementHandler = jest.fn();
+    const deccrementHandler = jest.fn();
+
+    render(<CounterTwo count={0} handleIncrement={incrementHandler} handleDecrement={deccrementHandler}/>)
+
+    const incrementButton = screen.getByRole('button', {
+      name: 'Increment'
+    })
+
+    const decrementButton = screen.getByRole('button', {
+      name: 'Decrement' 
+    })
+
+    await user.click(incrementButton)
+    await user.click(decrementButton)
+
+    expect(incrementHandler).toHaveBeenCalledTimes(1)
+    expect(deccrementHandler).toHaveBeenCalledTimes(1)
+  })
+ 
+
+
+43) Mocking HTTP requests:
+==========================
+
+- Users Folder has the code.
+
+- We need to write a test to ensure the list of users is displayed or an error message is displayed if there is any error. 
+
+- We can go ahead and write the tests but there is a very important consideration that has to be made.
+
+- Real Apis are primarily used for end to end test and not for unit or functional test.
+
+- For one, We don't have to ensure that server is up and running to test whether component renders as intended.
+
+- And Two, Since these tests are run quite often, it is not feasible to include real APIs, which may even charge you based on the 
+  number of requests.
+
+- What we have to do is instead is mock the HTTP request in our test.
+
+- In our case, we mock the response to the request with the list of users or an error.
+
+- For mocking, when writing tests with RTL we make use of 'msw' (Mock Service Worker) package.
+
+- It is an API mocking library that uses service worker API to intercept actual request.
+
+- It is the closest thing to mocking a server without having to create one.
+
+ 
+44) msw setup:
+==============
+
+- Install msw using yarn add msw --dev
+
+- create a mocks folder in src/components and create a file server.ts
+
+- copy pasted code from msw website
+
+
+eg:
+---
+// src/mocks/server.js
+import { setupServer } from 'msw/node'
+import { handlers } from './handlers'
+
+// This configures a request mocking server with the given request handlers.
+export const server = setupServer(...handlers)
+
+
+45) MSW handlers:
+=================
+
+- create a new file handlers.ts in mocks folder.
+
+- import { rest } from 'msw'
+
+- export an array of handlers -> export const handlers = []
+
+- each handler is a combination of
+
+   * methods like get/post etc, 
+   * the path to the api endpoint and 
+   * a function which returns the mock response.
+
+- that function takes req, rep, and ctx and parameter.
+
+eg:
+---
+import { rest } from 'msw'
+
+export const handler = [
+  rest.get('https://jsonplaceholder.typicode.com/users', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json(
+        [
+          {
+            name: 'Bruce Wayne'
+          },
+          {
+            name: 'Clarke Kent'
+          },
+          {
+            name: 'Princess Diana'
+          }
+        ]
+      )
+    )
+  })
+]
+
+- finally this is provided as an argument to setUpServer() method in server.ts file.
+
+
+46) Testing with msw:
+=====================
+
+- We write test to check user listitems has length of 3, which is no of user names we have mocked previousaly.
+
+- But we get this error: Expected length: 3
+                         Received length: 10
+
+- This is because our mocked server is not linked yet with our test file and test is getting length 10 which is length from actual 
+  JSON Placeholder api call.
+
+- To fix this we visit docs -> https://mswjs.io/docs/getting-started/integrate/node
+
+- copy this code from doc under setup section -> Using Create React App heading -> to setupTests.ts file in our vscode project.
+
+// src/setupTests.js
+import { server } from './components/mocks/server'
+// Establish API mocking before all tests.
+beforeAll(() => server.listen())
+
+// Reset any request handlers that we may add during the tests,
+// so they don't affect other tests.
+afterEach(() => server.resetHandlers())
+
+// Clean up after the tests are finished.
+afterAll(() => server.close())
+
+
+- For coding convention purpose we move mocked usernames array in seprate file called usernamearray.ts
+
+- We import this in handler.ts file and test file and use it.
+
+
+
+47) MSW Error handling:
+=======================
+
+- We want to write test for error message when the api call fails.
+
+- But our mock server is retruning response with status code 200 which is for success.
+
+- If we change the status code to 500 for error and try to proceed, it will get applied to all the tests written in test file.
+
+- So this is not an ideal approach to follow.
+
+- Instead we can just make server return failure response only inside the particular failure test and by doing so, we need not to  
+  worry that this will get carried outside of this test, because it will not.
+
+- The reason is we are resetting server after every test in being ran in setUpTest.ts file.
+
+
+Steps to be followed to achieve goal:
+-------------------------------------
+
+- import rest from msw, and our mock server in test file.
+
+- get hold of server inside particular test file using server.use()
+
+- inside server.use(--here--), write logic to make server return failure response which will make <p> tag to render error message
+  inside our artifical DOM.
+
+- make sure to use async, await because we use findBy() query in this case which is appropriate for such scenarios of appearance and  
+  disappearance of DOM elements asynchronousaly.
+
+
+eg:
+---
+
+test('renders error message', async () => {
+    server.use(
+      rest.get('https://jsonplaceholder.typicode.com/users', (req, res, ctx) => {
+        return res(
+          ctx.status(500)
+        )
+      })
+    )
+
+    render(<Users />)
+    const errorMessageElement = await screen.findByText('Error', { exact: false})
+    expect(errorMessageElement).toBeInTheDocument()
+})
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+48) Static Analysis testing:
+============================
+
+- Process of verifying that your code meet certain expectations without actually running it.
+
+* Ensures consisten style and formatting.
+
+* Check for common mistakes and possible bugs
+
+* Limit the complexity of the code.
+
+* Verify type consistencey.
+
+
+Our Normal Testing vs Static Analysis Testing:
+----------------------------------------------
+
+- All types of tests runs the code and then compare the outcome against known expected outputs to see if everything works OK.
+
+- Where Static Testing analyses aspects such as:
+  
+  * Readability
+  * Consistency
+  * Error Handling
+  * Type checking
+  * Alignment with best practises
+
+- Testing checks YOUR CODE WORKS OR NOT.
+
+- Static Analysis Testing checks YOUR CODE IS WRITTEN WELL OR NOT.
+
+
+Tools for SAT:
+--------------
+* Typescript
+* Eslint
+* Prettier
+* Husky
+* lint-staged
+
+
+
+49) ESlint:
+===========
+
+- It is a tool for identifying and reporting on patterns found in ECMAScript/Javascript code, with the goal of making code more 
+  consistent and avoiding bugs.
+
+- Install ESLint extension in vs code.
+
+  eg: using const variable before declaration shows a compile time error.
+
+- Create react app also installs the testing library plugin for eslint by default.
+  
+  eg: using async await with getBy queries will show u error warnings
+
+- To add JEST Dom plugin for Eslint  -> yarn add -D eslint-plugin-jest-dom
+
+  - Then in package.json, eslintconfig section, in the extends array, 'plugin: jest-dom/recommended' 
+  - Ths will add a list of recommended rules while using JEST dom macthers.
+
+  expect(
+
+- To run eslint with a npm script, that will allow every developer in the team to run one command and identify if there are errors in the project.
+ 
+  - in package.json scripts section ->  "lint": "eslint --ignore-path .gitignore .",
+
+  - run yarn lint to check output.
 

@@ -93,15 +93,6 @@ describe('Counter', () => {
 
     await user.tab()
     expect(setButtonElement).toHaveFocus();
-  })
-
-  test('Select Options ', async () => {
-    render(<textarea defaultValue = 'Hello World' />)
-
-    const textAreaElement = screen.getByRole('textbox');
-    await user.clear(textAreaElement);
-
-    expect(textAreaElement).toHaveValue('')
-  })
-
+  })  
+   
 })

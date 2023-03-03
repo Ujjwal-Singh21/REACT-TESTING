@@ -37,8 +37,8 @@ export const Application = () => {
           <label> <input type="checkbox" id="terms" /> I agree to the terms and conditions </label>
         </div>
 
-        <button>Submit</button>
-        {/* <button disabled>Submit</button> */}
+        {/* <button>Submit</button> */}
+        <button disabled>Submit</button>
       </form>
     </>
   )
