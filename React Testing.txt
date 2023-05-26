@@ -1353,5 +1353,5 @@ Tools for SAT:
  
   - in package.json scripts section ->  "lint": "eslint --ignore-path .gitignore .",
 
-  - run yarn lint to check output.
+  - run yarn lintcor npm run lint to check output.
 
